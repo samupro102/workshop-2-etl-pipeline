@@ -1,0 +1,6 @@
+,metrica,valor
+0,filas,4810
+1,"duplicados (year, category, nominee, artist)",0
+2,artist nulo,1840
+3,artist y workers nulos a la vez,186
+4,nominee nulo,6

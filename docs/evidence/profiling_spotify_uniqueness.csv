@@ -1,0 +1,7 @@
+,metrica,valor
+0,filas,114000
+1,track_id distintos,89741
+2,filas con track_id repetido,40900
+3,"pares (track_id, track_genre) repetidos",450
+4,filas duplicadas (todas las columnas menos el indice),450
+5,"(artists, track_name) con mas de un track_id",4657

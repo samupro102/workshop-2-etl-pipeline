@@ -1,0 +1,7 @@
+chequeo,filas,pct
+popularity == 0,16020,14.05
+duration_ms < 30 s,17,0.01
+duration_ms > 20 min,81,0.07
+tempo == 0,157,0.14
+loudness > 0,90,0.08
+campo 0-1 fuera de rango,0,0.0

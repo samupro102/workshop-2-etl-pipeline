@@ -1,0 +1,11 @@
+,dtype,nulos,pct_nulos,valores_distintos
+year,int64,0,0.0,62
+title,str,0,0.0,62
+published_at,"datetime64[us, UTC]",0,0.0,4
+updated_at,"datetime64[us, UTC]",0,0.0,10
+category,str,0,0.0,638
+nominee,str,6,0.12,4131
+artist,str,1840,38.25,1658
+workers,str,2190,45.53,2366
+img,str,1367,28.42,1463
+winner,bool,0,0.0,1
