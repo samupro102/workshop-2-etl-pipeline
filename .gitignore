@@ -1,0 +1,11 @@
+# Secretos
+.env
+
+# Airflow
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
