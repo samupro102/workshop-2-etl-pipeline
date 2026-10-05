@@ -50,7 +50,7 @@ x-airflow-common:
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.8}
-  # build: .
+  build: .
   env_file:
     - ${ENV_FILE_PATH:-.env}
   environment:
@@ -62,7 +62,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
     AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-airflow_jwt_secret}
     AIRFLOW__API_AUTH__JWT_ISSUER: ${AIRFLOW__API_AUTH__JWT_ISSUER:-airflow}
@@ -81,6 +81,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -90,6 +91,23 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  data-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DATA_DB_USER}
+      POSTGRES_PASSWORD: ${DATA_DB_PASSWORD}
+      POSTGRES_DB: ${GRAMMY_DB_NAME}
+    volumes:
+      - data-db-volume:/var/lib/postgresql/data
+      - ./sql/init_databases.sql:/docker-entrypoint-initdb.d/01_init_databases.sql:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DATA_DB_USER}", "-d", "${GRAMMY_DB_NAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
   postgres:
     image: postgres:16
     environment:
@@ -334,4 +352,5 @@ services:
         condition: service_completed_successfully
 
 volumes:
+  data-db-volume:
   postgres-db-volume:
