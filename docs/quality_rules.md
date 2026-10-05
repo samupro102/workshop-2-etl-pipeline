@@ -35,6 +35,8 @@ Evidencia reproducible en `notebooks/data_profiling.ipynb` y `docs/evidence/`.
 | DQ10 | Prepared | clave de artista | Completitud | No nula en las nominaciones con artista asignado | 100 % | Critical | RK08, RK10 | R1, R3 |
 | DQ11 | Prepared | dimensión de artista | Unicidad | Clave normalizada única | 100 % | Critical | RK07, RK10 | R1-R3 |
 | DQ12 | Prepared | hechos de nominación | Consistencia | Nominaciones distintas en hechos = filas crudas de Grammy | 100 % | Critical | RK08 | R3 |
+| DQ13 | Prepared | cruce Grammy-Spotify | Consistencia | Proporción de artistas de Grammy con coincidencia en Spotify | >= 40 % | Warning | RK11 | R1-R3 |
+| DQ14 | Prepared | cruce Grammy-Spotify | Unicidad | Cada artista de Grammy se asocia a una sola clave en la dimensión de artista (sin coincidencias ambiguas) | 100 % | Critical | RK10, RK11 | R1-R3 |
 
 ## 3. Justificación de umbrales
 
@@ -42,3 +44,6 @@ Evidencia reproducible en `notebooks/data_profiling.ipynb` y `docs/evidence/`.
 - **DQ04 (99 %, Warning):** los duplicados exactos son redundantes y la transformación los elimina; se toleran hasta 1 %. Más que eso sugiere un problema de origen.
 - **DQ08 (95 %, Warning):** por debajo de ese nivel el cruce por artista perdería demasiadas nominaciones; el pipeline puede continuar documentando las filas excluidas.
 - **DQ05 y DQ09 (Informational):** son limitaciones conocidas que no deben bloquear, pero deben quedar registradas en cada ejecución. DQ09 falla a propósito en cada lote para dejar constancia.
+
+- **DQ13 (>= 40 %, Warning):** con menos coincidencias, el grupo de artistas nominados presentes en Spotify sería demasiado pequeño para comparar su popularidad y su perfil de audio (R1, R2). No es Critical porque la cobertura limitada es una limitación conocida del dataset de Spotify (muestra de 114 000 pistas), y el pipeline debe seguir y exponerla. El umbral es provisional: se revisa cuando midamos la coincidencia real en la transformación.
+- **DQ14 (100 %, Critical):** si un mismo artista de Grammy coincidiera con dos claves de la dimensión, sus nominaciones se contarían dos veces y se rompería R3. Es una invariante posterior a la transformación, así que bloquea la carga.
