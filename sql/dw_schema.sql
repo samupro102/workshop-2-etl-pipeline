@@ -34,8 +34,6 @@ ON CONFLICT (artist_norm) DO NOTHING;
 CREATE TABLE IF NOT EXISTS dim_track (
     track_key  INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     track_id   TEXT NOT NULL UNIQUE,          -- llave de negocio (Spotify)
-    track_name TEXT,
-    album_name TEXT,
     explicit   BOOLEAN
 );
 
@@ -57,18 +55,12 @@ CREATE TABLE IF NOT EXISTS bridge_track_genre (
 
 -- Grano: una fila por cancion unica (track_id)
 CREATE TABLE IF NOT EXISTS fact_track_audio (
-    track_key        INTEGER PRIMARY KEY REFERENCES dim_track (track_key),
-    popularity       SMALLINT NOT NULL CHECK (popularity BETWEEN 0 AND 100),
-    duration_ms      INTEGER  NOT NULL CHECK (duration_ms >= 0),
-    danceability     DOUBLE PRECISION NOT NULL CHECK (danceability BETWEEN 0 AND 1),
-    energy           DOUBLE PRECISION NOT NULL CHECK (energy BETWEEN 0 AND 1),
-    valence          DOUBLE PRECISION NOT NULL CHECK (valence BETWEEN 0 AND 1),
-    acousticness     DOUBLE PRECISION NOT NULL CHECK (acousticness BETWEEN 0 AND 1),
-    speechiness      DOUBLE PRECISION NOT NULL CHECK (speechiness BETWEEN 0 AND 1),
-    instrumentalness DOUBLE PRECISION NOT NULL CHECK (instrumentalness BETWEEN 0 AND 1),
-    liveness         DOUBLE PRECISION NOT NULL CHECK (liveness BETWEEN 0 AND 1),
-    loudness         DOUBLE PRECISION NOT NULL,
-    tempo            DOUBLE PRECISION NOT NULL CHECK (tempo >= 0)
+    track_key    INTEGER PRIMARY KEY REFERENCES dim_track (track_key),
+    popularity   SMALLINT NOT NULL CHECK (popularity BETWEEN 0 AND 100),
+    danceability DOUBLE PRECISION NOT NULL CHECK (danceability BETWEEN 0 AND 1),
+    energy       DOUBLE PRECISION NOT NULL CHECK (energy BETWEEN 0 AND 1),
+    valence      DOUBLE PRECISION NOT NULL CHECK (valence BETWEEN 0 AND 1),
+    acousticness DOUBLE PRECISION NOT NULL CHECK (acousticness BETWEEN 0 AND 1)
 );
 
 -- Grano: una fila por artista en cada nominacion Grammy
@@ -99,3 +91,4 @@ CREATE TABLE IF NOT EXISTS etl_load_audit (
     rows_loaded INTEGER NOT NULL,
     loaded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
