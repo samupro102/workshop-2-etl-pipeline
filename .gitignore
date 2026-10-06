@@ -10,3 +10,4 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 .venv*/
+data/work/
