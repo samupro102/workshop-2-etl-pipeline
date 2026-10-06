@@ -1,5 +1,4 @@
 -- Esquema estrella del Data Warehouse (base music_dw)
--- Se puede ejecutar varias veces: usa IF NOT EXISTS y ON CONFLICT.
 
 -- ===== DIMENSIONES =====
 
