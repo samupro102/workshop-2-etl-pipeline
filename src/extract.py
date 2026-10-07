@@ -1,3 +1,4 @@
+
 """Extraccion de las dos fuentes. No limpia ni corrige datos: solo selecciona
 las columnas necesarias y deja un archivo de trabajo para la validacion cruda."""
 import os

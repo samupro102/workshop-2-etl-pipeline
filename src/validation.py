@@ -2,6 +2,7 @@
 Las reglas DQxx se definen aqui (versionadas en Git). Cada expectation lleva su
 rule_id en meta para poder mapear regla -> expectation."""
 import json
+from pathlib import Path
 from datetime import datetime, timezone
 
 import great_expectations as gx
@@ -135,7 +136,7 @@ def _gate(df, stage, expectations):
     print(f"[{stage}] resultados guardados en {path}")
 
     if max_failure == FailureSeverity.CRITICAL:
-        raise ValueError(f"[{stage}] Validacion cruda con fallo CRITICAL. Se bloquea la transformacion.")
+        raise ValueError(f"[{stage}] Validacion con fallo CRITICAL. Se bloquea el avance del pipeline.")
     if max_failure == FailureSeverity.WARNING:
         print(f"[{stage}] Hay fallos WARNING: la politica documentada permite continuar.")
     print(f"[{stage}] Compuerta superada segun la politica.")
@@ -150,3 +151,63 @@ def validate_spotify_raw(path=None):
 def validate_grammys_raw(path=None):
     df = pd.read_csv(path or str(GRAMMY_RAW))
     return _gate(_with_artist_flag(df), "raw_grammy", grammy_raw_expectations())
+
+
+PREPARED_DIR = DATA_DIR / "work" / "prepared"
+DQ13_MIN_MATCH = 0.40  # umbral de quality_rules.md (provisional)
+
+
+def prepared_artist_expectations():
+    return [
+        # DQ11 - clave normalizada unica en dim_artist
+        E.ExpectColumnValuesToBeUnique(
+            column="artist_norm", severity="critical", meta={"rule_id": "DQ11"}),
+        # DQ13 - proporcion de artistas de Grammy con coincidencia en Spotify
+        E.ExpectColumnValuesToBeInSet(
+            column="matches_spotify", value_set=[True], mostly=DQ13_MIN_MATCH,
+            severity="warning", meta={"rule_id": "DQ13"}),
+    ]
+
+
+def prepared_nomination_expectations(expected_nominations):
+    return [
+        # DQ10 - toda nominacion tiene clave de artista (real o 'Desconocido')
+        E.ExpectColumnValuesToNotBeNull(
+            column="artist_norm", severity="critical", meta={"rule_id": "DQ10"}),
+        E.ExpectColumnValuesToBeInSet(
+            column="artist_in_dim", value_set=[True],
+            severity="critical", meta={"rule_id": "DQ10"}),
+        # DQ12 - nominaciones distintas == filas del Grammy crudo
+        E.ExpectColumnUniqueValueCountToBeBetween(
+            column="nomination_id", min_value=expected_nominations,
+            max_value=expected_nominations,
+            severity="critical", meta={"rule_id": "DQ12"}),
+        # DQ14 - cada artista se asocia a exactamente una clave de dim_artist
+        E.ExpectColumnValuesToBeBetween(
+            column="dim_matches", min_value=1, max_value=1,
+            severity="critical", meta={"rule_id": "DQ14"}),
+    ]
+
+
+def validate_prepared(prepared_dir=None):
+    folder = Path(prepared_dir) if prepared_dir else PREPARED_DIR
+    dim = pd.read_csv(folder / "dim_artist.csv")
+    fact = pd.read_csv(folder / "fact_nomination.csv")
+    expected = len(pd.read_csv(str(GRAMMY_RAW)))
+
+    # Dimension de artista: DQ11 (unicidad) y DQ13 (cruce, solo artistas Grammy)
+    art = dim[["artist_norm", "in_spotify", "in_grammy"]].copy()
+    art["matches_spotify"] = art["in_spotify"].astype(object).where(art["in_grammy"], None)
+
+    # Nominaciones: DQ10, DQ12 y DQ14
+    counts = dim["artist_norm"].value_counts()
+    nom = fact[["nomination_id", "artist_norm"]].copy()
+    is_unknown = nom["artist_norm"] == "__unknown__"
+    nom["dim_matches"] = nom["artist_norm"].map(counts).fillna(0).astype(int)
+    nom.loc[is_unknown, "dim_matches"] = 1  # marcador sembrado en el DW
+    nom["artist_in_dim"] = nom["dim_matches"] >= 1
+
+    return [
+        _gate(art, "prepared_artist", prepared_artist_expectations()),
+        _gate(nom, "prepared_nomination", prepared_nomination_expectations(expected)),
+    ]
