@@ -155,8 +155,8 @@ def build_grammy_tables() -> dict:
     return counts
 def build_dim_artist() -> dict:
     """Une los artistas de ambas fuentes y mide el cruce Grammy -> Spotify."""
-    sp = pd.read_csv(PREPARED_DIR / "spotify_artists.csv")
-    gr = pd.read_csv(PREPARED_DIR / "grammy_artists.csv")
+    sp = pd.read_csv(PREPARED_DIR / "spotify_artists.csv", keep_default_na=False, na_values=[""])
+    gr = pd.read_csv(PREPARED_DIR / "grammy_artists.csv", keep_default_na=False, na_values=[""])
 
     dim = sp.merge(gr, on="artist_norm", how="outer",
                    suffixes=("_sp", "_gr"), indicator=True)
@@ -172,7 +172,8 @@ def build_dim_artist() -> dict:
     match_rate = matched / grammy_total if grammy_total else 0.0
     log.info("Artistas Grammy: %d | con cruce en Spotify: %d (%.2f%%) | sin cruce: %d",
              grammy_total, matched, match_rate * 100, grammy_total - matched)
-
+    
+    dim["artist_name"] = dim["artist_name"].fillna(dim["artist_norm"])
     dim.to_csv(PREPARED_DIR / "dim_artist.csv", index=False)
     log.info("dim_artist: %d filas", len(dim))
     return {"dim_artist": len(dim), "grammy_artists": grammy_total,

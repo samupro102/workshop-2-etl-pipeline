@@ -101,6 +101,7 @@ def _summarize(result):
             "expectation": cfg.type,
             "column": cfg.kwargs.get("column", ""),
             "success": bool(r.success),
+            "severity": getattr(getattr(cfg, "severity", None), "name", str(getattr(cfg, "severity", None))),
             "unexpected_percent": res.get("unexpected_percent"),
         })
     return rows
@@ -191,8 +192,8 @@ def prepared_nomination_expectations(expected_nominations):
 
 def validate_prepared(prepared_dir=None):
     folder = Path(prepared_dir) if prepared_dir else PREPARED_DIR
-    dim = pd.read_csv(folder / "dim_artist.csv")
-    fact = pd.read_csv(folder / "fact_nomination.csv")
+    dim = pd.read_csv(folder / "dim_artist.csv", keep_default_na=False, na_values=[""])
+    fact = pd.read_csv(folder / "fact_nomination.csv", keep_default_na=False, na_values=[""])
     expected = len(pd.read_csv(str(GRAMMY_RAW)))
 
     # Dimension de artista: DQ11 (unicidad) y DQ13 (cruce, solo artistas Grammy)
