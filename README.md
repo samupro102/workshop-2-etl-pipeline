@@ -1,3 +1,4 @@
 R1: popularidad en Spotify (Spotify) según si el artista fue nominado (Grammy).
 R2: perfil de audio (Spotify) de artistas nominados vs. no nominados, por género (Spotify) y estatus Grammy (Grammy).
 R3: nominaciones por categoría (Grammy) distribuidas por género (Spotify).
+El umbral se mantiene en 40 % tras medir la coincidencia real: el primer lote dio 34.28 % de artistas de Grammy con coincidencia en Spotify (822 de 2 398), por debajo del umbral, así que DQ13 emite un Warning en cada ejecución. Se acepta como limitación conocida del dataset de Spotify y no se ajusta el umbral para que pase. Como dato de contexto, el 49 % de las nominaciones con artista identificado tiene un artista presente en Spotify.
