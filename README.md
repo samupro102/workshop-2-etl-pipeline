@@ -263,17 +263,7 @@ El detalle y las justificaciones de umbral están en [`docs/quality_rules.md`](d
 | **Auditoría** | `etl_load_audit`: `dag_run_id`, `table_name`, `rows_loaded`, `loaded_at` |
 | **Marcador de artista desconocido** | Fila `__unknown__` / "Desconocido" sembrada en `dim_artist` |
 
-```mermaid
-erDiagram
-    dim_year ||--o{ fact_nomination : year_key
-    dim_category ||--o{ fact_nomination : category_key
-    dim_artist ||--o{ fact_nomination : artist_key
-    dim_artist ||--o{ bridge_track_artist : artist_key
-    dim_track ||--o{ bridge_track_artist : track_key
-    dim_track ||--o{ bridge_track_genre : track_key
-    dim_genre ||--o{ bridge_track_genre : genre_key
-    dim_track ||--|| fact_track_audio : track_key
-```
+![star_schema](docs/star_schema.png)
 
 **Cómo cada requerimiento queda soportado:**
 
